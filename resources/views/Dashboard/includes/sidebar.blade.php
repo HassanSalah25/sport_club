@@ -357,6 +357,12 @@
                         <li><a class="menu-item" href="{{route('report.index')}}" data-i18n="nav.flot_charts.flot_line_charts">
                                 كل التقارير</a>
                         </li>
+                        <li><a class="menu-item" href="{{route('reports.subscription_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                                تقارير الاشتراكات</a>
+                        </li>
+                        <li><a class="menu-item" href="{{route('reports.schedules_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                                تقارير الجداول</a>
+                        </li>
 
                     </ul>
                 </li>

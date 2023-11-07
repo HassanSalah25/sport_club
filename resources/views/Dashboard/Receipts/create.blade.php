@@ -88,7 +88,7 @@
                                                 <div class="col-md-4" style="display: none" id="from_others">
                                                     <div class="form-group">
                                                         <label for="projectinput2">  من  </label>
-                                                        <select class="form-control"  name="from" >
+                                                        <select class="form-control" >
                                                             @foreach($receiptTypes as $type)
                                                                 <option value="{{$type->id}}">{{$type->name}}</option>
 
@@ -256,16 +256,16 @@
 
         function checkfromType(){
             if($('input[name="from_type"]:checked').val() =='players'){
-                $('#from_players').show();
-                $('#from_others').hide();
+                $('#from_players').show().attr('name','from');
+                $('#from_others').hide().removeAttr('name');
                 $("#price_list").removeAttr('disabled');
 
             }
             if($('input[name="from_type"]:checked').val() =='others'){
-                $('#from_others').show();
+                $('#from_others').show().attr('name','from');
                 $("#price_list").attr('disabled','disabled');
 
-                $('#from_players').hide();
+                $('#from_players').hide().removeAttr('name');
             }
         }
         function typeOfAmount(){

@@ -110,6 +110,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['adminMiddleware', 'auth' =>
     Route::resource('partner',"\App\Http\Controllers\PartnersController");
     Route::resource('report',"\App\Http\Controllers\ReportController");
 
+    Route::prefix('reports')->as('reports.')->group(function (){
+        Route::get('subscription_reports','App\Http\Controllers\AdminReport@subscription_reports')->name('subscription_reports');
+        Route::get('schedules_reports','App\Http\Controllers\AdminReport@schedules_reports')->name('schedules_reports');
+    });
+
 Route::get('logout',"App\Http\Controllers\LoginController@logout")->name('logout');
 });
 

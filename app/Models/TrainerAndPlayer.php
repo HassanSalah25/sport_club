@@ -18,7 +18,7 @@ class TrainerAndPlayer extends Model
 
     public function players()
     {
-        return $this->hasMany('App\Models\eventTrainerPlayers', 'player_id', 'id');
+        return $this->hasMany('App\Models\EventTrainerPlayers', 'event_id', 'id');
     }
     public function EventTrainer(){
         return $this->hasMany('App\Models\EventTrainerPlayers','event_id','id');
@@ -29,6 +29,10 @@ class TrainerAndPlayer extends Model
     public function sports() {
 
         return $this->belongsTo('App\Models\Sports','sport_id','id');
+    }
+    public function level() {
+
+        return $this->belongsTo('App\Models\Levels','level_id','id');
     }
     public function event(){
         return $this->hasMany('App\Models\EventTrainerPlayers','event_id','id');

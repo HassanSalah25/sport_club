@@ -18,7 +18,7 @@ class RoleController extends Controller
     {
         //
         $data['roles'] = Role::query()->orderBy('id','desc')->paginate(10);
-        return view('laratrust::panel.roles.index',$data);
+        return view('Dashboard.Roles.index',$data);
     }
 
     /**

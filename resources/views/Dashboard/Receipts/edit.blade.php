@@ -86,7 +86,7 @@
                                                 <div class="col-md-4" style="display: none" id="from_others">
                                                     <div class="form-group">
                                                         <label for="projectinput2">  من  </label>
-                                                        <select class="form-control"  name="from" >
+                                                        <select class="form-control"  >
                                                             @foreach($receiptTypes as $type)
                                                                 <option
                                                                     @if($receipt->from == $type->id &&  $receipt->type_of_from == 'others') selected @endif
@@ -243,13 +243,13 @@
          */
         function checkfromType(){
             if($('input[name="from_type"]:checked').val() =='players'){
-                $('#from_players').show();
-                $('#from_others').hide();
+                $('#from_players').show().attr('name','from');
+                $('#from_others').hide().removeAttr('name');
             }
             if($('input[name="from_type"]:checked').val() =='others'){
-                $('#from_others').show();
+                $('#from_others').show().attr('name','from');
 
-                $('#from_players').hide();
+                $('#from_players').hide().removeAttr('name');
             }
         }
         function typeOfAmount(){

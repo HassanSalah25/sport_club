@@ -45,5 +45,9 @@ class Players extends Model
         return $this->belongsTo('App\Models\AttendancePlayers','player_id','id');
 
 }
+
+    public  function receipts(){
+        return $this->hasMany('App\Models\Receipts','from','id');
+    }
 }
 
