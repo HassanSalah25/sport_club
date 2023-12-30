@@ -38,6 +38,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
+                                                        <label for="projectinput2"> السيريال </label>
+                                                        <input type="text" disabled class="form-control"  value="{{ $receipt->id }}" required>
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
                                                         <label for="projectinput2">  اسم المستلم </label>
                                                         <input type="text" class="form-control" disabled name="name" value="{{ auth()->user()->name }}" required>
 
@@ -142,12 +149,33 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
+                                            <div class="row align-items-end">
+                                                <div class="col-md-5">
                                                     <div class="form-group">
                                                         <label for="payer">  اسم القائم بالدفع </label>
                                                         <input type="text" name="payer" id="payer" value="{{old('payer')}}" class="form-control">
 
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="form-group">
+                                                        <input type="checkbox" name="payment_type" id="payment_type" class="checkbox"
+                                                        @if($receipt->serial_number)
+                                                            checked
+                                                            @endif
+                                                        >
+                                                        <label for="payer">  الدفع بالفيزا </label>
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5"  id="serial"
+                                                @if(!$receipt->serial_number)
+                                                     style="display: none"
+                                                        @endif
+                                                >
+                                                    <div class="form-group">
+                                                        <label for="payer">  رقم الايصال </label>
+                                                        <input type="text" name="serial" id="serial" value="{{old('serial')??$receipt->serial_number}}" class="form-control">
                                                     </div>
                                                 </div>
                                             </div>
@@ -298,6 +326,13 @@
                 }
             });
         }
-
+        $('#payment_type').change(function() {
+            if ($(this).is(':checked')) {
+                $('#serial').show();
+            } else {
+                $('#serial').hide();
+                $('#serial').find('input').val(null);
+            }
+        });
     </script>
 @endsection

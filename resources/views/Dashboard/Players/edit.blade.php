@@ -70,6 +70,19 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
+                                                        <label for="" class="control-label mb-1">فرع:</label>
+                                                        <select class="form-control" name="branchs_id">
+                                                            <option value="">اختر فرع</option>
+                                                            @foreach($branches as $branch)
+                                                                <option value="{{$branch->id}}"
+                                                                    {{ $branch->id == $player->branch_id ? 'selected' : '' }}
+                                                                >{{$branch->name}}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
                                                         <label for="projectinput3"> الدراسه</label>
                                                         <input type="text" id="" class="form-control"  name="study" value="{{ $player->study  }}" placeholder="اكتب الدراسه">
                                                     </div>
@@ -136,6 +149,23 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            @foreach($players_files as $players_file)
+                                                <div class="row" id="row_file">
+                                                    <div class="col-6">
+                                                        <div class="form-group">
+                                                            <label for="" class="control-label mb-1"> اسم الملف:</label>
+                                                            <input  name="name_of_file[]" type="text" class="form-control"    value="{{$players_file->$media_name}}" placeholder="type your File">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-1">
+                                                        <div class="form-group">
+                                                            <button type="button" class="remove_ele   btn btn-danger" style="margin-top: 30px;"><i class="la la-trash"></i></button>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            @endforeach
+
                                             <div class="row" id="row_file">
                                                 <div class="col-6">
                                                     <div class="form-group">
@@ -150,14 +180,12 @@
 
                                                     </div>
                                                 </div>
-
                                                 <div class="col-1">
                                                     <div class="form-group">
                                                         <button type="button" id="add_ele" class="   btn btn-success" style="margin-top: 30px;"><i class="la la-plus"></i></button>
                                                     </div>
 
                                                 </div>
-
                                             </div>
                                             <div class="row">
                                                 <div class="col-md-6">
@@ -179,6 +207,7 @@
                                             </div>
                                             <h4 class="form-section"><i class="icon-game-controller"></i>تخصيص لعبة</h4>
                                             <div id="group1" class="fvrduplicate">
+                                                @if($player->playerPriceLists->isNotEmpty())
                                                 @foreach($player->playerPriceLists as $key => $price_list)
                                                     <div class="row entry">
                                                         <div class="col-md-6 ">
@@ -257,7 +286,87 @@
                                                         </div>
                                                     </div>
                                                 @endforeach
+                                                @else
+                                                    <div id="group1" class="fvrduplicate">
+                                                        <div class="row entry">
+                                                            <div class="col-md-6 ">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2"> الفرع</label>
+                                                                    <select class=" form-control branch_id" id="branch_id"
+                                                                            name="branch_id[]">
+                                                                        <option value="0"> حدد الفرع</option>
+                                                                        @foreach($branches as $branch)
+                                                                            <option
+                                                                                    value="{{$branch->id}}">{{$branch->name}}</option>
 
+                                                                        @endforeach
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2"> اللعبه</label>
+                                                                    <select class=" form-control select2-placeholder-multiple  sport_id"
+                                                                            id="sport_id" name="sport_id[]">
+                                                                        <option value=""></option>
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2"> المستويات</label>
+                                                                    <select class="select2-placeholder-multiple form-control level_id"
+                                                                            id="level_id" name="level_id[]">
+                                                                        <option value="" selected>اختر مستوي</option>
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2"> قائمه الاسعار</label>
+                                                                    <select class="select2-placeholder-multiple price_list form-control"
+                                                                            id="price_list"
+                                                                            name="price_list[]">
+                                                                        <option value="" selected>اختر قائمه سعر</option>
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2"> السعر</label>
+                                                                    <input class="form-control price form-control"
+                                                                           id="price"
+                                                                           disabled
+                                                                           name="price[]">
+
+                                                                </div>
+                                                            </div>
+                                                            {{--<div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="projectinput2">  الباكدج</label>
+                                                                    <select class=" form-control" id="package_id"  name="package_id" >
+                                                                        <option value="0"> حدد الباكدج</option>
+                                                                        @foreach($packages as $package)
+                                                                            <option value="{{$package->id}}">{{$package->name}}</option>
+
+                                                                        @endforeach
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>--}}
+                                                            <div class="col-md-1 mt-2">
+                                                                <button type="button" class="btn btn-success btn-add"><i
+                                                                            class="fa fa-plus" aria-hidden="true"></i></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
@@ -377,6 +486,8 @@
                         var route = "{{route('get-levels')}}";
 
                         var level_id = sport_id.parents('.entry').find(".level_id");
+                        var price = sport_id.parents('.entry').find(".price");
+
                         console.log( level_id)
                         $.ajax(route,   // request url
                             {
@@ -393,7 +504,18 @@
                                             data: {"sport_id": sport, "level_id": level, "price_list": id },
                                             success: function (data, status, xhr) {// success callback function
                                                 price_list.html(data.price_list);
+                                                price_list.change(function () {
+                                                    var route = "{{route('get-price')}}";
+                                                    $.ajax(route,   // request url
+                                                        {
+                                                            type: 'GET',  // http method
+                                                            data: {"id": $(this).val()},
+                                                            success: function (data, status, xhr) {// success callback function
+                                                                price.val(data.price);
+                                                            }
 
+                                                        })
+                                                });
                                             }
                                         });
                                 }
@@ -439,11 +561,13 @@
             getPriceList(level);
         });
 
+
         function getPriceList(level) {
 
             var sport_id = level.parents('.entry').find(".sport_id").select2("val");
             var level_id = level.parents('.entry').find(".level_id").select2("val");
             var price_list = level.parents('.entry').find(".price_list");
+            var price = level.parents('.entry').find(".price");
 
             var route = "{{route('get-price-list-player')}}";
             $.ajax(route,   // request url
@@ -453,8 +577,22 @@
                     success: function (data, status, xhr) {// success callback function
                         price_list.html(data.price_list);
 
+
                     }
                 });
+            price_list.change(function () {
+                console.log('dssdsd')
+                var route = "{{route('get-price')}}";
+                $.ajax(route,   // request url
+                    {
+                        type: 'GET',  // http method
+                        data: {"id": $(this).val()},
+                        success: function (data, status, xhr) {// success callback function
+                            price.val(data.price);
+                        }
+
+                    })
+            });
         }
 
         $('#add_ele').click(function () {
@@ -527,6 +665,16 @@
 
             </div>
         </div>
+         <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="projectinput2"> السعر</label>
+                                                            <input class="form-control price form-control"
+                                                                   id="price"
+                                                                   disabled
+                                                                   name="price[]">
+
+                                                        </div>
+                                                    </div>
 
                 <div class="col-md-1 mt-2">
                     <button type="button" class="btn btn-success btn-add"><i

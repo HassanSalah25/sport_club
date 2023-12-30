@@ -103,7 +103,7 @@
                 </ul>
             </li>
             @endif
-            @if( auth()->user()->hasRole(['administrator','superadministrator'])  )
+            @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('employee-read'))
 
             <li class=" nav-item"><a href="#"><i class="ft-user"></i><span class="menu-title"
                                                                               data-i18n="nav.flot_charts.main"> الموظفين </span></a>
@@ -111,9 +111,13 @@
                     <li><a class="menu-item" href="{{route('employee.index')}}" data-i18n="nav.flot_charts.flot_line_charts">
                             كل الموظفين</a>
                     </li>
+                    @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('employee-create'))
+
+
                     <li><a class="menu-item" href="{{route('employee.create')}}" data-i18n="nav.flot_charts.flot_bar_charts">
                             انشاء موظف  جديد</a>
                     </li>
+                    @endif
                     <li><a class="menu-item" href="{{route('role.index')}}" data-i18n="nav.flot_charts.flot_bar_charts">
                             الادوار</a>
                     </li>
@@ -121,7 +125,7 @@
                 </ul>
             </li>
             @endif
-            @if( auth()->user()->hasRole(['administrator','superadministrator'])  )
+            @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('trainer-read'))
 
             <li class=" nav-item"><a href="#"><i class="icon-users"></i><span class="menu-title"
                                                                               data-i18n="nav.flot_charts.main"> المدربين </span></a>
@@ -129,10 +133,13 @@
                     <li><a class="menu-item" href="{{route('trainer.index')}}" data-i18n="nav.flot_charts.flot_line_charts">
                             كل المدربين</a>
                     </li>
+                    @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('trainer-create'))
+
                     <li><a class="menu-item" href="{{route('trainer.create')}}" data-i18n="nav.flot_charts.flot_bar_charts">
                             انشاء مدرب  جديد</a>
                     </li>
 
+                    @endif
                 </ul>
             </li>
             @endif
@@ -349,24 +356,9 @@
                 </ul>
             </li>
             @endif
-            @if( auth()->user()->hasRole(['administrator','superadministrator'])  )
 
-                <li class=" nav-item"><a href="#"><i class="la la-clone"></i><span class="menu-title"
-                                                                                      data-i18n="nav.flot_charts.main"> التقارير </span></a>
-                    <ul class="menu-content">
-                        <li><a class="menu-item" href="{{route('report.index')}}" data-i18n="nav.flot_charts.flot_line_charts">
-                                كل التقارير</a>
-                        </li>
-                        <li><a class="menu-item" href="{{route('reports.subscription_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
-                                تقارير الاشتراكات</a>
-                        </li>
-                        <li><a class="menu-item" href="{{route('reports.schedules_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
-                                تقارير الجداول</a>
-                        </li>
 
-                    </ul>
-                </li>
-            @endif
+
 {{--            <li class=" nav-item"><a href="#"><i class="la la-commenting"></i><span class="menu-title"--}}
 {{--                                                                                    data-i18n="nav.flot_charts.main">  تعاقدات الشركاء </span></a>--}}
 {{--                <ul class="menu-content">--}}
@@ -379,6 +371,33 @@
 
 {{--                </ul>--}}
 {{--            </li>--}}
+
+            <li class=" nav-item"><a href="#"><i class="la la-clone"></i><span class="menu-title"
+                                                                               data-i18n="nav.flot_charts.main"> التقارير </span></a>
+                <ul class="menu-content">
+                    <li><a class="menu-item" href="{{route('report.index')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                            كل التقارير</a>
+                    </li>
+                    @if( auth()->user()->hasRole(['administrator']) || auth()->user()->hasPermission('subscription_reports') )
+
+                        <li><a class="menu-item" href="{{route('reports.subscription_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                                تقارير الاشتراكات</a>
+                        </li>
+                    @endif
+                    @if( auth()->user()->hasRole(['administrator']) || auth()->user()->hasPermission('schedules_reports') )
+
+                        <li><a class="menu-item" href="{{route('reports.schedules_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                                تقارير الجداول</a>
+                        </li>
+                    @endif
+                    @if( auth()->user()->hasRole(['administrator']) || auth()->user()->hasPermission('stadiums_reports') )
+
+                        <li><a class="menu-item" href="{{route('reports.stadiums_reports')}}" data-i18n="nav.flot_charts.flot_line_charts">
+                                تقارير الملاعب</a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
             @if( auth()->user()->hasRole(['administrator','superadministrator']) || auth()->user()->hasPermission('tournament-read') )
 
             <li class=" nav-item"><a href="#"><i class="ft-layers"></i><span class="menu-title"

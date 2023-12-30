@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ExportToExcelSheet;
+use App\Models\Branchs;
 use App\Models\Custody;
 use App\Models\Players;
 use App\Models\Receipts;
@@ -26,6 +27,13 @@ class ReceiptsPayController extends Controller
      */
     public function index(Request $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+
         if ($request->filter){
             $receipts =      $this->filter($request);
             if($request->pdf){
@@ -39,7 +47,7 @@ class ReceiptsPayController extends Controller
             $receipts = ReceiptsPay::paginate(10);
 
         }
-        $players =Players::get();
+        $players =Players::whereIn('branch_id', $branchIds)->get();
         $receiptTypesFrom= ReceiptTypePay::whereIn('type',['Save_money','bank'])->get();
         $receiptTypes= ReceiptTypePay::get();
         $employees = User::get();
@@ -53,7 +61,13 @@ class ReceiptsPayController extends Controller
      */
     public function create()
     {
-        $players =Players::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $players =Players::whereIn('branch_id', $branchIds)->get();
         $receiptTypesFrom= ReceiptTypePay::whereIn('type',['Save_money','bank'])->get();
         $receiptTypes= ReceiptTypePay::get();
         $employees = User::get();
@@ -78,6 +92,7 @@ class ReceiptsPayController extends Controller
             'amount'=> -$request->amount,
             'statement'=>$request->statement,
             'date_receipt'=>$request->date,
+            'buyer'=>$request->buyer,
         ]);
 
      if($request->employee_id){
@@ -135,6 +150,7 @@ class ReceiptsPayController extends Controller
         $receiptsPay->type_of_to=$request->to_type;
         $receiptsPay->amount= (-$request->amount);
         $receiptsPay->date_receipt=$request->date;
+        $receiptsPay->buyer =$request->buyer;
         $receiptsPay->save();
 
         if($request->employee_id){

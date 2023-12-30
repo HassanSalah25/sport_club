@@ -147,7 +147,7 @@
                                             <select  class="form-control" name="custody_id" id="custody_id">
                                                 <option value=""> اختر عهده </option>
                                             @foreach($custodies as $custody)
-                                                <option data-price="{{ $custody->price }}" value="{{$custody->id}}"> {{ $custody->receipt_pay->receiptTypeTO->name }}</option>
+                                                <option data-price="{{ $custody->price }}" value="{{$custody->id}}"> {{ $custody->receipt_pay?->receiptTypeTO->name }}</option>
                                             @endforeach
                                             </select>
                                         </div>

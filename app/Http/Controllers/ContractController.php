@@ -20,8 +20,6 @@ class ContractController extends Controller
     {
         $contracts =Contract::with('contract_details')->paginate(10);
         return view("Dashboard.Contracts.index",compact('contracts'));
-
-
     }
 
     /**

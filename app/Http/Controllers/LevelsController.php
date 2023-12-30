@@ -8,7 +8,6 @@ use App\Models\Branches_sports;
 use App\Models\Branchs;
 use App\Models\Levels;
 use App\Models\Sports;
-use App\Models\SportsAndLevelTrainer;
 use Illuminate\Http\Request;
 
 class LevelsController extends Controller
@@ -20,7 +19,17 @@ class LevelsController extends Controller
      */
     public function index()
     {
-        $levels = Levels::with('sports.branches')->paginate(10);
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $levels = Levels::with('sports.branches')
+            ->whereHas('sports.branches', function ($query) use ($branchIds) {
+                $query->whereIn('branchs.id', $branchIds);
+            })
+            ->paginate(10);
 //        dd($levels);
         return view('Dashboard.Levels.index', compact('levels'));
 
@@ -33,7 +42,10 @@ class LevelsController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+        if (\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches = \Auth::user()->branches;
         return view('Dashboard.Levels.create', compact('branches'));
     }
 
@@ -76,7 +88,10 @@ class LevelsController extends Controller
      */
     public function edit(Levels $level)
     {
-        $branches = Branchs::get();
+        if (\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches = \Auth::user()->branches;
 
         return view('Dashboard.Levels.edit', compact('branches', 'level'));
 
@@ -126,7 +141,7 @@ class LevelsController extends Controller
 //    dd($request->all());
         $branches_request = $request->branch_id;
         $stadium_request = $request->stadium_id;
-        if($branches_request){
+        if ($branches_request) {
             $levels = Sports::whereHas('branches', function ($query) use ($branches_request) {
                 if (is_array($branches_request)) {
                     $query->whereIn('branch_id', $branches_request);
@@ -139,10 +154,10 @@ class LevelsController extends Controller
             })->get();
 
         }
-        if($stadium_request){
+        if ($stadium_request) {
             $levels = Sports::whereHas('stadium', function ($query) use ($stadium_request) {
 
-                    $query->where('stadium.id', $stadium_request);
+                $query->where('stadium.id', $stadium_request);
 
 
             })->get();
@@ -166,7 +181,7 @@ class LevelsController extends Controller
             }
             if ($request->sport_id) {
                 if ($request->sport_id == $sport->id)
-                        $selected = 'selected';
+                    $selected = 'selected';
 
             }
             $option .= "
@@ -180,17 +195,29 @@ class LevelsController extends Controller
 
     public function getLevels(Request $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
         $levels = Levels::whereHas('sports', function ($query) use ($request) {
             $query->where('sports.id', $request->sport_id);
+        })
+        ->whereHas('sports.branches', function ($query) use ($branchIds) {
+            $query->whereIn('branchs.id', $branchIds);
         })->get();
 
         $selected = '';
-        $option = ' <option value="" >اختر مستوي </option>    ';
+
+        $option = ' <option value="" >اختر مستوي </option>';
 
         foreach ($levels as $level) {
-                if ($request->level_id == $level->id) {
-                    $selected = 'selected';
-                }
+            if($request->user_sport_id == $level->id)
+                $selected = 'selected';
+            if ($request->level_id == $level->id) {
+                $selected = 'selected';
+            }
             $option .= "
       <option $selected value=$level->id > $level->name </option> ";
             $selected = '';

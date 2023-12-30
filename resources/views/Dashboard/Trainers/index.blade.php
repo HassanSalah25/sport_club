@@ -25,7 +25,7 @@
             @endif
             @if(Session::has('error'))
                 <div class="alert alert-danger alert-block">
-                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    <button type="button" class="close" data-di smiss="alert">×</button>
                     <strong>{{session()->get('error')}}</strong>
                 </div>
             @endif
@@ -40,10 +40,12 @@
                                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                                 <div class="heading-elements">
                                     <ul class="list-inline mb-0">
+                                        @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('trainer-create'))
 
-                                            <li>
+                                        <li>
                                                 <a class="btn btn-sm btn-success box-shadow-2 round btn-min-width pull-right" href="{{route('trainer.create')}}"> <i class="ft-plus ft-md"></i> اضافة مدرب جديد</a>
                                             </li>
+                                    @endif
                                 </div>
                             </div>
                             <div class="card-content">
@@ -123,7 +125,13 @@
 
                                                 <td class="text-truncate">
                                                     <div class="btn-group" role="group" aria-label="Basic example">
-                                                            <a href="{{route('trainer.edit', $user->id)}}" class="btn btn-info btn-sm round"> تعديل</a>
+                                                        @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('trainer-update'))
+
+                                                        <a href="{{route('trainer.edit', $user->id)}}" class="btn btn-info btn-sm round"> تعديل</a>
+                                                        @endif
+                                                            @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('trainer-delete'))
+
+
                                                             <form action="{{route('trainer.destroy' ,$user->id)}}" method="POST" class="btn-group">
                                                                 @csrf @method('delete')
                                                                 <button
@@ -134,6 +142,7 @@
                                                                     حذف
                                                                 </button>
                                                             </form>
+                                                            @endif
                                                     </div>
                                                 </td>
                                             </tr>

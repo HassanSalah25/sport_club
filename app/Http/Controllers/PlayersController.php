@@ -26,20 +26,34 @@ class PlayersController extends Controller
      */
     public function index()
     {
-        $players = Players::with('sports')->with('branches')->get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $players = Players::with('sports')->with('branches')
+            ->whereIn('branch_id', $branchIds)
+            ->get();
         return view('Dashboard.Players.index',compact('players'));
     }
 
     public function getPlayers(Request $request)
     {
         $check = SportsAndLevelTrainer::where('user_id', $request->user_id)->exists();
-
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
         $players = null;
         if ($check)
         {
             $players = Players::whereHas('playerPriceLists',function ($q) use ($request){
-                $q->where('sport_id',$request->sport_id)->where('level_id',$request->level_id);
-            })
+                            $q->where('sport_id',$request->sport_id)
+                                ->where('level_id',$request->level_id);
+                        })->whereIn('branch_id',$branchIds)
                 ->with('branches')->get();
 
         }
@@ -54,7 +68,10 @@ class PlayersController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         $packages = Packages::get();
 
         return view("Dashboard.Players.create",compact('branches','packages'));
@@ -80,7 +97,7 @@ class PlayersController extends Controller
             'anther_phone'=>$request->anther_phone,
             'father_job'=>$request->father_job,
             'father_email'=>$request->father_email,
-//            'branch_id'=>$request->branch_id,
+            'branch_id'=>$request->branchs_id,
 //            'sport_id'=>$request->sport_id,
 //            'level_id'=>$request->level_id,
             'package_id'=>$request->package_id,
@@ -146,7 +163,10 @@ class PlayersController extends Controller
      */
     public function edit(Players $player)
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         $packages = Packages::get();
 //        dd($player_files);
         return view("Dashboard.Players.edit",compact('branches','player','packages'));
@@ -173,9 +193,9 @@ class PlayersController extends Controller
         $player->anther_phone = $request->anther_phone;
         $player->father_job = $request->father_job;
         $player->father_email = $request->father_email;
-        $player->branch_id = $request->branch_id;
-        $player->sport_id = $request->sport_id;
-        $player->level_id = $request->level_id;
+        $player->branch_id = $request->branchs_id;
+//        $player->sport_id = $request->sport_id;
+//        $player->level_id = $request->level_id;
         $player->package_id = $request->package_id;
         $player->anther_sport = $request->anther_sports;
         $player->join_by = $request->join_by;

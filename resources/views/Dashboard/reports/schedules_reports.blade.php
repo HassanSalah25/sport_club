@@ -19,6 +19,7 @@
 
 
                         <div class="row">
+
                             <div class="col-md-12 mt-2">
                                 <div class="form-group">
                                     <label for="" class="control-label mb-1">فرع:</label>
@@ -45,6 +46,7 @@
                                     <input class="form-control" type="date" name="toDate" value="{{request('toDate')}}">
                                 </div>
                             </div>
+
                         </div>
 
                     </div>
@@ -96,7 +98,7 @@
                                 <h4 class="card-title">التقارير</h4>
                                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                                 <div>
-                                    <form action="{{route('reports.subscription_reports')}}" method="GET">
+                                    <form action="{{route('reports.schedules_reports')}}" method="GET">
 
                                         <input type="hidden" name="filter" value="1">
 
@@ -115,6 +117,12 @@
                                                                 >{{$branch->name}}</option>
                                                             @endforeach
                                                         </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-group">
+                                                        <label for="" class="control-label mb-1"> البحث </label>
+                                                        <input  class="form-control" type="text" name="search_keyword" value="{{request('search_keyword')}}" >
                                                     </div>
                                                 </div>
                                                 <div class="col-6">
@@ -145,15 +153,16 @@
                                 </div>
                             </div>
                             <div class="card-content">
-
                                 @forelse($reportsData as $key=>$reportData)
                                     <div class="table-responsive">
                                         <h6 class="text-center mt-5">@lang('validation.'.$key)</h6>
                                         <table id="tablecontents" class="table table-hover table-xl mb-0 sortable">
                                             <thead>
                                             <tr>
+                                                <th class="border-top-0"> التاريخ</th>
+                                                <th class="border-top-0"> اليوم</th>
+                                                <th class="border-top-0"> الملعب</th>
                                                 <th class="border-top-0"> أسم المدرب</th>
-                                                <th class="border-top-0"> أسم اللاعب</th>
                                                 <th class="border-top-0"> من</th>
                                                 <th class="border-top-0">الي</th>
 
@@ -162,15 +171,14 @@
                                             <tbody>
 
                                             @foreach($reportData as $report)
-                                                @foreach($report->players as $player)
                                                     <tr class="row1">
-                                                        <td>{{$report->traniers->name}}</td>
-                                                        <td>{{$player->players->name}}</td>
+                                                            <td>{{\Carbon\Carbon::parse($report->time_from)->format('d/m/Y')}}</td>
+                                                        <td>@lang('validation.'.$key)</td>
+                                                        <td>{{$report->stadiums->name}}</td>
+                                                        <td>{{$report->name}}</td>
                                                         <td>{{\Carbon\Carbon::parse($report->time_from)->format('h:i A')}}</td>
                                                         <td>{{\Carbon\Carbon::parse($report->time_to)->format('h:i A')}}</td>
-
                                                     </tr>
-                                                @endforeach
                                             @endforeach
                                             </tbody>
                                         </table>

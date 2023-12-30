@@ -17,6 +17,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class TrainerAndPlayerController extends Controller
 {
@@ -27,11 +28,23 @@ class TrainerAndPlayerController extends Controller
      */
     public function index()
     {
-        $players = Players::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $players = Players::whereIn('branch_id', $branchIds)->get();
         $users = User::orderBy('created_at','DESC')->where('is_trainer', '1')->get();
-        $sports = Sports::get();
-        $stadiums = Stadium::get();
-        $branches = Branchs::get();
+        $sports = Sports::whereHas('branches',function ($query) use ($branchIds) {
+            $query ->whereIn('branchs.id', $branchIds);
+        })->get();
+        $stadiums = Stadium::whereIn('branch_id', $branchIds)->get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
+
         return view('Dashboard.TrainerAndPlayers.index', compact('players', 'users', 'sports', 'stadiums', 'branches'));
 
     }
@@ -43,10 +56,16 @@ class TrainerAndPlayerController extends Controller
      */
     public function create(Request $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
 
         if ($request->ajax()) {
             $events = [];
-            $data = TrainerAndPlayer::get();
+            $data = TrainerAndPlayer::whereIn('branch_id',$branchIds)->get();
             foreach ($data as $event) {
 
                 $events[] = [
@@ -94,9 +113,9 @@ class TrainerAndPlayerController extends Controller
         $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
             ->where(function ($query) use ($time_from,$time_to) {
                 $query->where(function ($q) use ($time_from) {
-                    $q->where('time_from', '<=', $time_from)->where('time_to', '>=', $time_from);
+                    $q->where('time_from', '<=', $time_from)->where('time_to', '>', $time_from);
                 })->orWhere(function ($q) use ($time_to) {
-                    $q->where('time_from', '<=', $time_to)->where('time_to', '>=', $time_to);
+                    $q->where('time_from', '<=', $time_to)->where('time_to', '>', $time_to);
                 });
             })
             ->count();
@@ -104,13 +123,12 @@ class TrainerAndPlayerController extends Controller
         $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
             ->where(function ($query) use ($time_from,$time_to) {
                 $query->where(function ($q) use ($time_from) {
-                    $q->where('time_from', '<=', $time_from)->where('time_to', '>=', $time_from);
+                    $q->where('time_from', '<=', $time_from)->where('time_to', '>', $time_from);
                 })->orWhere(function ($q) use ($time_to) {
-                    $q->where('time_from', '<=', $time_to)->where('time_to', '>=', $time_to);
+                    $q->where('time_from', '<=', $time_to)->where('time_to', '>', $time_to);
                 });
             })
             ->count();
-
         if ($conflictstp > 0 || $conflictssr > 0) {
             return response()->json([
                 'status' => 400,
@@ -119,25 +137,30 @@ class TrainerAndPlayerController extends Controller
 
         }
         if ($request->repeated == "true") {
+            $uuid = Str::uuid()->toString();
             $startDate = Carbon::parse($time_from);
             $endDate = Carbon::parse($time_to);
-            for ($i = 1; $i <= 30; $i++) {
-                $event = TrainerAndPlayer::create([
-                    'branch_id' => $request->branch_id,
-                    'stadium_id' => $request->stadium_id,
-                    'trainer_id' => $request->user_id,
-                    'sport_id' => $request->sport_id,
-                    'level_id' => $request->level_id,
-                    'day' => $startDate->format('l'),
-                    'date' => $startDate->toDate(),
-                    'time_from' => $startDate,
-                    'time_to' => $endDate,
-                ]);
-                foreach ($request->player_id as $player) {
-                    EventTrainerPlayers::create([
-                        'player_id' => $player,
-                        'event_id' => $event->id,
+            for  ($i = 0; $i <= 30; $i++) {
+                if($i % 7 == 0 )
+                {
+                    $event = TrainerAndPlayer::create([
+                        'branch_id' => $request->branch_id,
+                        'stadium_id' => $request->stadium_id,
+                        'trainer_id' => $request->user_id,
+                        'sport_id' => $request->sport_id,
+                        'level_id' => $request->level_id,
+                        'day' => $startDate->format('l'),
+                        'date' => $startDate->toDate(),
+                        'time_from' => $startDate,
+                        'time_to' => $endDate,
+                        'event_repeated' => $uuid,
                     ]);
+                    foreach ($request->player_id as $player) {
+                        EventTrainerPlayers::create([
+                            'player_id' => $player,
+                            'event_id' => $event->id,
+                        ]);
+                    }
                 }
                 $startDate->addDay();
                 $endDate->addDay();
@@ -188,18 +211,25 @@ class TrainerAndPlayerController extends Controller
      */
     public function show(TrainerAndPlayer $trainerAndPlayer, Request $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
 
         if ($request->ajax()) {
             $events = [];
             $data = TrainerAndPlayer::with('stadiums')->with('traniers')
                 ->with('EventTrainer.players')
+                ->whereIn('branch_id',$branchIds)
                 ->where('id', $request->id)->first();
 //            dd($data);
             $players = '';
             $stadium_name = '';
             $trainer_name = '';
-            $stadium_name = $data->stadiums->name;
-            $trainer_name = $data->traniers->name;
+            $stadium_name = $data?->stadiums?->name;
+            $trainer_name = $data?->traniers?->name;
             $name = [];
             foreach ($data->EventTrainer as $ev) {
                 array_push($name, $ev->players->id);
@@ -250,10 +280,9 @@ class TrainerAndPlayerController extends Controller
         $time_to = Carbon::parse($request->day . ' ' . $request->to)->toDateTimeString();
 
         $trainerAndPlayer = TrainerAndPlayer::find($request->trainerAndPlayer_id);
+        $trainerAndPlayers = TrainerAndPlayer::where('event_repeated',$trainerAndPlayer->event_repeated)->get();
 
-        $request->repeated;
         // Check for time conflicts
-
         if ($request->repeated == "true") {
 
             for ($i = 0; $i <= 30; $i++)
@@ -264,9 +293,9 @@ class TrainerAndPlayerController extends Controller
                 $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
                     ->where(function ($query) use ($start,$end) {
                         $query->where(function ($q) use ($start) {
-                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                            $q->where('time_from', '<=', $start)->where('time_to', '>', $start);
                         })->orWhere(function ($q) use ($end) {
-                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                            $q->where('time_from', '<', $end)->where('time_to', '>', $end);
                         });
                     })
                     ->count();
@@ -274,9 +303,9 @@ class TrainerAndPlayerController extends Controller
                 $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
                     ->where(function ($query) use ($start,$end) {
                         $query->where(function ($q) use ($start) {
-                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                            $q->where('time_from', '<=', $start)->where('time_to', '>', $start);
                         })->orWhere(function ($q) use ($end) {
-                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                            $q->where('time_from', '<', $end)->where('time_to', '>', $end);
                         });
                     })
                     ->count();
@@ -293,38 +322,41 @@ class TrainerAndPlayerController extends Controller
             $startDate = Carbon::parse($time_from);
             $endDate = Carbon::parse($time_to);
 
-            for ($i = 1; $i <= 30; $i++) {
-                $trainerAndPlayer->update([
-                    'branch_id' => $request->branch_id,
-                    'stadium_id' => $request->stadium_id,
-                    'trainer_id' => $request->user_id,
-                    'sport_id' => $request->sport_id,
-                    'level_id' => $request->level_id,
-                    'day' => $startDate->format('l'),
-                    'date' => $startDate->toDate(),
-                    'time_from' => $startDate,
-                    'time_to' => $endDate,
-                ]);
-                $trainerAndPlayer->event()->delete();
-                foreach ($request->player_id as $player) {
-                    EventTrainerPlayers::create([
-                        'player_id' => $player,
-                        'event_id' => $trainerAndPlayer->id,
+            foreach ($trainerAndPlayers as $trainerAndPlayer) {
+
+
+                    $trainerAndPlayer->update([
+                        'branch_id' => $request->branch_id,
+                        'stadium_id' => $request->stadium_id,
+                        'trainer_id' => $request->user_id,
+                        'sport_id' => $request->sport_id,
+                        'level_id' => $request->level_id,
+                        'day' => $startDate->format('l'),
+                        'date' => $startDate->toDate(),
+                        'time_from' => $startDate,
+                        'time_to' => $endDate,
                     ]);
-                }
-                $startDate->addDay();
-                $endDate->addDay();
+                    $trainerAndPlayer->event()->delete();
+                    foreach ($request->player_id as $player) {
+                        EventTrainerPlayers::create([
+                            'player_id' => $player,
+                            'event_id' => $trainerAndPlayer->id,
+                        ]);
+                    }
+                $startDate->addWeek();
+                $endDate->addWeek();
             }
-        } else {
+        }
+        else {
 
             $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
                 ->where('trainer_id', '!=', $request->trainer_id)
                 ->where('sport_id', '!=', $request->sport_id)
                 ->where(function ($query) use ($time_from,$time_to) {
                     $query->where(function ($q) use ($time_from) {
-                        $q->where('time_from', '<=', $time_from)->where('time_to', '>=', $time_from);
+                        $q->where('time_from', '<=', $time_from)->where('time_to', '>', $time_from);
                     })->orWhere(function ($q) use ($time_to) {
-                        $q->where('time_from', '<=', $time_to)->where('time_to', '>=', $time_to);
+                        $q->where('time_from', '<=', $time_to)->where('time_to', '>', $time_to);
                     });
                 })
                 ->count();
@@ -332,13 +364,12 @@ class TrainerAndPlayerController extends Controller
             $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
                 ->where(function ($query) use ($time_from,$time_to) {
                     $query->where(function ($q) use ($time_from) {
-                        $q->where('time_from', '<=', $time_from)->where('time_to', '>=', $time_from);
+                        $q->where('time_from', '<=', $time_from)->where('time_to', '>', $time_from);
                     })->orWhere(function ($q) use ($time_to) {
-                        $q->where('time_from', '<=', $time_to)->where('time_to', '>=', $time_to);
+                        $q->where('time_from', '<=', $time_to)->where('time_to', '>', $time_to);
                     });
                 })
                 ->count();
-
             if ($conflictstp > 0 || $conflictssr > 0) {
                 return response()->json([
                     'status' => 400,
@@ -346,7 +377,9 @@ class TrainerAndPlayerController extends Controller
                 ]);
 
             }
-            $trainerAndPlayer->update([
+            foreach ($trainerAndPlayers as $trainerAndPlayer)
+                $trainerAndPlayer->delete();
+            $trainerAndPlayer = TrainerAndPlayer::create([
                 'stadium_id' => $request->stadium_id,
                 'trainer_id' => $request->user_id,
                 'sport_id' => $request->sport_id,
@@ -356,6 +389,7 @@ class TrainerAndPlayerController extends Controller
                 'time_from' => $time_from,
                 'time_to' => $time_to,
             ]);
+
             $trainerAndPlayer->event()->delete();
             foreach ($request->player_id as $player) {
                 EventTrainerPlayers::create([
@@ -377,7 +411,7 @@ class TrainerAndPlayerController extends Controller
      * @param \App\Models\TrainerAndPlayer $trainerAndPlayer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(StoreTrainerAndPlayerRequest $request)
+    public function destroy(Request $request)
     {
         $event = TrainerAndPlayer::find($request->id);
         EventTrainerPlayers::where('event_id', $request->id)->delete();

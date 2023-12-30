@@ -71,7 +71,7 @@
 
                                             <tr class="row1" data-id="{{ $package->id }}" >
                                                 <td>{{$package->name}}</td>
-                                                <td>{{$package->sports->name}}</td>
+                                                <td>{{$package->sports?->name}}</td>
                                                 <td>{{$package->desc}}</td>
 
 

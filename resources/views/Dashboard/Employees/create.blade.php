@@ -239,6 +239,52 @@
                                                         <label><input name="permession[]" type="checkbox" value="package-delete" />حذف</label>
                                                     </div>
                                                 </div>
+
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">بنود العقد</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-delete" />حذف</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">الموظفين</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="employee-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-delete" />حذف</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">المدربين</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-delete" />حذف</label>
+                                                    </div>
+                                                </div>
                                                 <div class="col-md-3">
                                                     <div class="checkbox">
                                                         <h5 for="">العقود</h5>
@@ -494,6 +540,18 @@
 {{--                                                    <div class="checkbox">--}}
 {{--                                                        <label><input name="permession[]" type="checkbox" value="players-delete" />حذف</label>--}}
 {{--                                                    </div>--}}
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">التقارير</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="subscription_reports" />تقارير الاشتراكات</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="schedules_reports" />تقارير الجداول</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="stadiums_reports" />تقارير الملاعب</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

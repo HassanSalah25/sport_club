@@ -17,7 +17,17 @@ class SportsController extends Controller
      */
     public function index()
     {
-        $sports = Sports::with('branches')->paginate(10);
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $sports = Sports::with('branches')
+            ->whereHas('branches',function ($query) use ($branchIds) {
+                $query ->whereIn('branchs.id', $branchIds);
+            })
+            ->paginate(10);
         return view('Dashboard.Sports.index',compact('sports'));
     }
 
@@ -28,7 +38,11 @@ class SportsController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+         if(\Auth::user()->hasRole('administrator'))
+             $branches = Branchs::get();
+         else
+             $branches =  \Auth::user()->branches;
+
 
         return view('Dashboard.Sports.create',compact('branches'));
 
@@ -74,7 +88,10 @@ class SportsController extends Controller
     {
 //        dd($sport->branches);
 //        $sport =Sports::find($id);
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
 
         return view('Dashboard.Sports.edit',compact('branches','sport'));
     }

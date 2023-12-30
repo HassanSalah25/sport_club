@@ -14,7 +14,9 @@ use App\Models\StadiumsRentTable;
 use App\Models\TrainerAndPlayer;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class StadiumsRentTableController extends Controller
 {
@@ -25,11 +27,23 @@ class StadiumsRentTableController extends Controller
      */
     public function index()
     {
-        $players = Players::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+
+        $players = Players::whereIn('branch_id', $branchIds)->get();
         $users = User::where('is_trainer', '1')->get();
-        $sports = Sports::get();
-        $stadiums = Stadium::get();
-        $branches = Branchs::get();
+        $sports = Sports::whereHas('branches',function ($query) use ($branchIds) {
+            $query ->whereIn('branchs.id', $branchIds);
+        })->get();
+        $stadiums = Stadium::whereIn('branch_id', $branchIds)->get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.StadiumsRentTables.index', compact('players', 'users', 'sports', 'stadiums', 'branches'));
 
     }
@@ -41,9 +55,18 @@ class StadiumsRentTableController extends Controller
      */
     public function create(StoreStadiumsRentTableRequest $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+
         if ($request->ajax()) {
             $events = [];
-            $data = StadiumsRentTable::get();
+            $data = StadiumsRentTable::whereHas('stadiums.branches',function ($query) use ($branchIds) {
+                $query ->whereIn('branchs.id', $branchIds);
+            })->get();
             $type = '';
             foreach ($data as $event) {
                 if ($event->type == 'trainer') {
@@ -112,9 +135,9 @@ class StadiumsRentTableController extends Controller
                 $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
                     ->where(function ($query) use ($start,$end) {
                         $query->where(function ($q) use ($start) {
-                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                            $q->where('time_from', '<=', $start)->where('time_to', '>', $start);
                         })->orWhere(function ($q) use ($end) {
-                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                            $q->where('time_from', '<=', $end)->where('time_to', '>', $end);
                         });
                     })
                     ->count();
@@ -122,13 +145,12 @@ class StadiumsRentTableController extends Controller
                 $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
                     ->where(function ($query) use ($start,$end) {
                         $query->where(function ($q) use ($start) {
-                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                            $q->where('time_from', '<=', $start)->where('time_to', '>', $start);
                         })->orWhere(function ($q) use ($end) {
-                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                            $q->where('time_from', '<=', $end)->where('time_to', '>', $end);
                         });
                     })
                     ->count();
-
                 if ($conflictstp > 0 || $conflictssr > 0) {
                     return response()->json([
                         'status' => 400,
@@ -139,21 +161,27 @@ class StadiumsRentTableController extends Controller
             }
 
 
+            $uuid = Str::uuid()->toString();
             $startDate = Carbon::parse($from);
             $endDate = Carbon::parse($to);
             $total = 0;
-            for ($i = 1; $i <= 30; $i++) {
-                $event = StadiumsRentTable::create([
-                    'stadium_id' => $request->stadium_id,
-                    'user_id' => $request->user_id,
-                    'name' => $name,
-                    'type' => $type,
-                    'date' => $request->day,
-                    'price' => $stadium ->hour_fixed_rate,
-                    'time_from' => $startDate,
-                    'time_to' => $endDate,
-                ]);
-                $total += $event->price;
+            for ($i = 0; $i <= 30; $i++) {
+                if($i % 7 == 0){
+                    $event = StadiumsRentTable::create([
+                        'stadium_id' => $request->stadium_id,
+                        'user_id' => $request->user_id,
+                        'name' => $name,
+                        'type' => $type,
+                        'day' => Carbon::parse($request->day)->format('l'),
+                        'date' => $request->day,
+                        'price' => $stadium ->hour_fixed_rate,
+                        'time_from' => $startDate,
+                        'time_to' => $endDate,
+                        'event_repeated' => $uuid,
+                    ]);
+
+                    $total += $event->price;
+                }
                 $startDate->addDay();
                 $endDate->addDay();
             }
@@ -173,9 +201,9 @@ class StadiumsRentTableController extends Controller
             $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
                 ->where(function ($query) use ($from,$to) {
                     $query->where(function ($q) use ($from) {
-                        $q->where('time_from', '<=', $from)->where('time_to', '>=', $from);
+                        $q->where('time_from', '<=', $from)->where('time_to', '>', $from);
                     })->orWhere(function ($q) use ($to) {
-                        $q->where('time_from', '<=', $to)->where('time_to', '>=', $to);
+                        $q->where('time_from', '<=', $to)->where('time_to', '>', $to);
                     });
                 })
                 ->count();
@@ -183,12 +211,13 @@ class StadiumsRentTableController extends Controller
             $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
                 ->where(function ($query) use ($from,$to) {
                     $query->where(function ($q) use ($from) {
-                        $q->where('time_from', '<', $from)->where('time_to', '>', $from);
+                        $q->where('time_from', '<=', $from)->where('time_to', '>', $from);
                     })->orWhere(function ($q) use ($to) {
-                        $q->where('time_from', '<', $to)->where('time_to', '>', $to);
+                        $q->where('time_from', '<=', $to)->where('time_to', '>', $to);
                     });
                 })
                 ->count();
+
             if ($conflictstp > 0 || $conflictssr > 0) {
                 return response()->json([
                     'status' => 400,
@@ -201,6 +230,7 @@ class StadiumsRentTableController extends Controller
                 'user_id'=>$request->user_id,
                 'name'=>$name,
                 'type'=>$type,
+                'day' => Carbon::parse($request->day)->format('l'),
                 'date'=>$request->day,
                 'price'=>$stadium ->hour_rate,
                 'time_from'=>$from,
@@ -295,37 +325,120 @@ line;
      */
     public function update(StoreStadiumsRentTableRequest $request, StadiumsRentTable $stadiumsRentTable)
     {
-        $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
-            ->where(function ($query) use ($request) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('time_from', '<=', $request->start)->where('time_to', '>=', $request->start);
-                })->orWhere(function ($q) use ($request) {
-                    $q->where('time_from', '<=', $request->end)->where('time_to', '>=', $request->end);
-                });
-            })
-            ->count();
 
-        $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
-            ->where(function ($query) use ($request) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('time_from', '<=', $request->start)->where('time_to', '>=', $request->start);
-                })->orWhere(function ($q) use ($request) {
-                    $q->where('time_from', '<=', $request->end)->where('time_to', '>=', $request->end);
-                });
-            })
-            ->count();
+        $stadium = Stadium::find($request->stadium_id);
+        $startDate = Carbon::parse($request->from);
+        $endDate = Carbon::parse($request->to);
+        if ($request->repeated == "true") {
 
-        if ($conflictstp > 0 || $conflictssr > 0) {
-            return response()->json([
-                'status' => 400,
-                'error' => 'يوجد تعارض زمني. ميعاد آخر موجود في نفس الفترة الزمنية.'
+            for ($i = 0; $i <= 30; $i++)
+            {
+
+                $start = Carbon::parse($request->start);
+                $end = Carbon::parse($request->end);
+                $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
+                    ->where(function ($query) use ($start,$end) {
+                        $query->where(function ($q) use ($start) {
+                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                        })->orWhere(function ($q) use ($end) {
+                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                        });
+                    })
+                    ->count();
+
+                $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
+                    ->where(function ($query) use ($start,$end) {
+                        $query->where(function ($q) use ($start) {
+                            $q->where('time_from', '<=', $start)->where('time_to', '>=', $start);
+                        })->orWhere(function ($q) use ($end) {
+                            $q->where('time_from', '<=', $end)->where('time_to', '>=', $end);
+                        });
+                    })
+                    ->count();
+
+                if ($conflictstp > 0 || $conflictssr > 0) {
+                    return response()->json([
+                        'status' => 400,
+                        'error' => 'يوجد تعارض زمني. ميعاد آخر موجود في نفس الفترة الزمنية.'
+                    ]);
+
+                }
+            }
+            $uuid = Str::uuid()->toString();
+            $total = 0;
+            $rent = StadiumsRentTable::find($request->id);
+            $rents = StadiumsRentTable::where('event_repeated',$rent->event_repeated)->get();
+            foreach ($rents as $rent){
+                $rent->delete();
+            }
+            for ($i = 0; $i <= 30; $i++) {
+                if($i % 7 == 0){
+                    $event = StadiumsRentTable::create([
+                        'stadium_id' => $request->stadium_id,
+                        'user_id' => $request->user_id,
+                        'name' => $request->name,
+                        'type'=>$request->name ? 'strange' : 'trainer',
+                        'day' => Carbon::parse($request->day)->format('l'),
+                        'date' => $request->day,
+                        'price' => $stadium->hour_fixed_rate,
+                        'time_from' => $startDate,
+                        'time_to' => $endDate,
+                        'event_repeated' => $uuid,
+                    ]);
+
+                    $total += $event->price;
+                }
+                $startDate->addDay();
+                $endDate->addDay();
+            }
+        } else {
+            $conflictstp = TrainerAndPlayer::where('stadium_id', $request->stadium_id)
+                ->where(function ($query) use ($startDate,$endDate) {
+                    $query->where(function ($q) use ($startDate) {
+                        $q->where('time_from', '<=', $startDate)->where('time_to', '>=', $startDate);
+                    })->orWhere(function ($q) use ($endDate) {
+                        $q->where('time_from', '<=', $endDate)->where('time_to', '>=', $endDate);
+                    });
+                })
+                ->count();
+
+            $conflictssr = StadiumsRentTable::where('stadium_id', $request->stadium_id)
+                ->where(function ($query) use ($startDate,$endDate) {
+                    $query->where(function ($q) use ($startDate) {
+                        $q->where('time_from', '<=', $startDate)->where('time_to', '>', $startDate);
+                    })->orWhere(function ($q) use ($endDate) {
+                        $q->where('time_from', '<=', $endDate)->where('time_to', '>', $endDate);
+                    });
+                })
+                ->count();
+            if ($conflictstp > 0 || $conflictssr > 0) {
+                return response()->json([
+                    'status' => 400,
+                    'error' => 'يوجد تعارض زمني. ميعاد آخر موجود في نفس الفترة الزمنية.'
+                ]);
+
+            }
+
+            $rent = StadiumsRentTable::find($request->id);
+
+            $rents = StadiumsRentTable::where('event_repeated',$rent->event_repeated)->get();
+
+            foreach ($rents as $rent){
+                $rent->delete();
+            }
+            $event = StadiumsRentTable::create([
+                'stadium_id'=>$request->stadium_id,
+                'user_id'=>$request->user_id,
+                'name' => $request->name,
+                'type'=>$request->name ? 'strange' : 'trainer',
+                'day' => Carbon::parse($request->day)->format('l'),
+                'date'=>$request->day,
+                'price'=>$stadium ->hour_rate,
+                'time_from'=>$startDate,
+                'time_to'=>$endDate,
             ]);
 
         }
-        $event = StadiumsRentTable::find($request->id);
-        $event->time_from = $request->start;
-        $event->time_to = $request->end;
-        $event->save();
         return response()->json($event);
     }
 
@@ -358,5 +471,26 @@ line;
 
 
         $event->delete();
+    }
+
+    public function showEvent(StadiumsRentTable $stadiumsRentTable, Request $request)
+    {
+
+            $events = [];
+            $data = StadiumsRentTable::with('stadiums')->with('traniers')
+                ->where('id', $request->id)->first();
+
+            $players = '';
+            $stadium_name = '';
+            $trainer_name = '';
+            $stadium_name = $data->stadiums->name;
+            $trainer_name = $data->traniers?->name;
+            $name = [];
+           /* foreach ($data->EventTrainer as $ev) {
+                array_push($name, $ev->players->id);
+
+            }*/
+
+            return response()->json(['event' => $data, 'players' => $name, 'stadium_name' => $stadium_name, 'trainer_name' => $trainer_name]);
     }
 }

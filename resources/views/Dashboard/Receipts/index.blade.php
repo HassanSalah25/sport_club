@@ -189,6 +189,7 @@
                                     <table id="tablecontents" class="table table-hover table-xl mb-0 sortable">
                                         <thead>
                                         <tr>
+                                            <th class="border-top-0">سيريال</th>
                                             <th class="border-top-0">  اسم المستلم</th>
                                             <th class="border-top-0"> من </th>
                                             <th class="border-top-0"> الي </th>
@@ -209,6 +210,7 @@
                                         @forelse($receipts as $receipt )
 
                                                 <tr class="row1" data-id="{{ $receipt->id }}" >
+                                                    <td>{{$receipt->id}}</td>
                                                     <td>{{$receipt->user->name}}</td>
 
                                                     @php
@@ -219,7 +221,7 @@
                                                            $name = $player->name;
                                                         }
                                                         else{
-                                                            $name = $receipt->receiptTypeFrom->name;
+                                                            $name = $receipt->receiptTypeFrom?->name;
                                                         }
 
 

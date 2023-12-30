@@ -26,7 +26,7 @@
                             <div class="card-header">
                                 <h4 class="card-title" id="bordered-layout-card-center">اضافة لاعب جديد</h4>
                                 <a href="/sat/courses/create.php" class="heading-elements-toggle"><i
-                                        class="la la-ellipsis-v font-medium-3"></i></a>
+                                            class="la la-ellipsis-v font-medium-3"></i></a>
                             </div>
                             <div class="card-content collpase show">
                                 <div class="card-body">
@@ -65,6 +65,18 @@
                                                         <label for="projectinput3"> العنوان</label>
                                                         <input type="text" id="" class="form-control" name="address"
                                                                placeholder="اكتب العنوان">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="" class="control-label mb-1">فرع:</label>
+                                                        <select class="form-control" name="branchs_id">
+                                                            <option value="">اختر فرع</option>
+                                                            @foreach($branches as $branch)
+                                                                <option value="{{$branch->id}}"
+                                                                >{{$branch->name}}</option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -196,7 +208,7 @@
                                                                 <option value="0"> حدد الفرع</option>
                                                                 @foreach($branches as $branch)
                                                                     <option
-                                                                        value="{{$branch->id}}">{{$branch->name}}</option>
+                                                                            value="{{$branch->id}}">{{$branch->name}}</option>
 
                                                                 @endforeach
                                                             </select>
@@ -235,6 +247,17 @@
 
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="projectinput2"> السعر</label>
+                                                            <input class="form-control price form-control"
+                                                                   id="price"
+                                                                   disabled
+                                                                   name="price[]">
+
+                                                        </div>
+                                                    </div>
                                                     {{--<div class="col-md-4">
                                                         <div class="form-group">
                                                             <label for="projectinput2">  الباكدج</label>
@@ -250,23 +273,23 @@
                                                     </div>--}}
                                                     <div class="col-md-1 mt-2">
                                                         <button type="button" class="btn btn-success btn-add"><i
-                                                                class="fa fa-plus" aria-hidden="true"></i></button>
+                                                                    class="fa fa-plus" aria-hidden="true"></i></button>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label for="projectinput2">  الباكدج</label>
-                                                            <select class=" form-control" id="package_id"  name="package_id" >
-                                                                <option value=""> حدد الباكدج</option>
-                                                                @foreach($packages as $package)
-                                                                    <option value="{{$package->id}}">{{$package->name}}</option>
+                                                <div class="form-group">
+                                                    <label for="projectinput2"> الباكدج</label>
+                                                    <select class=" form-control" id="package_id" name="package_id">
+                                                        <option value=""> حدد الباكدج</option>
+                                                        @foreach($packages as $package)
+                                                            <option value="{{$package->id}}">{{$package->name}}</option>
 
-                                                                @endforeach
-                                                            </select>
+                                                        @endforeach
+                                                    </select>
 
-                                                        </div>
-                                                    </div>
+                                                </div>
+                                            </div>
                                             <h4 class="form-section">
                                                 <i class="ft-clipboard"></i>
                                                 الاوراق المطلوبه
@@ -304,7 +327,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <button type="submit" class="btn btn-primary w-100"><i
-                                                            class="la la-check-square-o"></i> حفظ
+                                                                class="la la-check-square-o"></i> حفظ
                                                     </button>
 
                                                 </div>
@@ -373,6 +396,7 @@
             var sport_id = level.parents('.entry').find(".sport_id").select2("val");
             var level_id = level.parents('.entry').find(".level_id").select2("val");
             var price_list = level.parents('.entry').find(".price_list");
+            var price = level.parents('.entry').find(".price");
 
             var route = "{{route('get-price-list-player')}}";
             $.ajax(route,   // request url
@@ -381,6 +405,18 @@
                     data: {"sport_id": sport_id, "level_id": level_id},
                     success: function (data, status, xhr) {// success callback function
                         price_list.html(data.price_list);
+                        price_list.change(function () {
+                            var route = "{{route('get-price')}}";
+                            $.ajax(route,   // request url
+                                {
+                                    type: 'GET',  // http method
+                                    data: {"id": $(this).val()},
+                                    success: function (data, status, xhr) {// success callback function
+                                        price.val(data.price);
+                                    }
+
+                                })
+                        });
 
                     }
                 });
@@ -403,11 +439,12 @@
             document.getElementById("myForm").reset();
 
         }
-            $(document).on('click', '.btn-add', function (e) {
-                e.preventDefault();
-                var controlForm = $(this).closest('.fvrduplicate'),
-                    currentEntry = $(this).parents('.entry:first'),
-                    newEntry = $(`<div id="group1" class="fvrduplicate">
+
+        $(document).on('click', '.btn-add', function (e) {
+            e.preventDefault();
+            var controlForm = $(this).closest('.fvrduplicate'),
+                currentEntry = $(this).parents('.entry:first'),
+                newEntry = $(`<div id="group1" class="fvrduplicate">
                                                 <div class="row entry">
                                                     <div class="col-md-6 ">
                                                         <div class="form-group">
@@ -416,62 +453,72 @@
                                                                     name="branch_id[]">
                                                                 <option value="0"> حدد الفرع</option>
                                                                 @foreach($branches as $branch)
-                    <option
-                        value="{{$branch->id}}">{{$branch->name}}</option>
+                <option
+                    value="{{$branch->id}}">{{$branch->name}}</option>
 
                                                                 @endforeach
-                    </select>
+                </select>
 
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="projectinput2"> اللعبه</label>
+                <select class=" form-control select2-placeholder-multiple  sport_id"
+                        id="sport_id" name="sport_id[]">
+                    <option value=""></option>
+                </select>
+
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="projectinput2"> المستويات</label>
+                <select class="select2-placeholder-multiple form-control level_id"
+                        id="level_id" name="level_id[]">
+                    <option value="" selected>اختر مستوي</option>
+                </select>لعب
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="projectinput2"> قائمه الاسعار</label>
+                <select class="select2-placeholder-multiple price_list form-control"
+                        id="price_list"
+                        name="price_list[]">
+                    <option value="" selected>اختر قائمه سعر</option>
+                </select>
+
+            </div>
+        </div>
+        <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="projectinput2"> السعر</label>
+                                                            <input class="form-control price form-control"
+                                                                   id="price"
+                                                                   disabled
+                                                                   name="price[]">
+
+                                                        </div>
+                                                    </div>
+
+
+                <div class="col-md-1 mt-2">
+                    <button type="button" class="btn btn-success btn-add"><i
+                            class="fa fa-plus" aria-hidden="true"></i></button>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="projectinput2"> اللعبه</label>
-                    <select class=" form-control select2-placeholder-multiple  sport_id"
-                            id="sport_id" name="sport_id[]">
-                        <option value=""></option>
-                    </select>
-
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="projectinput2"> المستويات</label>
-                    <select class="select2-placeholder-multiple form-control level_id"
-                            id="level_id" name="level_id[]">
-                        <option value="" selected>اختر مستوي</option>
-                    </select>لعب
-
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="projectinput2"> قائمه الاسعار</label>
-                    <select class="select2-placeholder-multiple price_list form-control"
-                            id="price_list"
-                            name="price_list[]">
-                        <option value="" selected>اختر قائمه سعر</option>
-                    </select>
-
-                </div>
-            </div>
-
-                    <div class="col-md-1 mt-2">
-                        <button type="button" class="btn btn-success btn-add"><i
-                                class="fa fa-plus" aria-hidden="true"></i></button>
-                    </div>
-                </div>
-            </div>`).appendTo(controlForm);
-                controlForm.find('.entry:not(:last) .btn-add')
-                    .removeClass('btn-add').addClass('btn-remove')
-                    .removeClass('btn-success').addClass('btn-danger')
-                    .html('<i class="fa fa-minus" aria-hidden="true"></i>');
-                $(".select2-placeholder-multiple").select2({
-                });
-            }).on('click', '.btn-remove', function (e) {
-                $(this).closest('.entry').remove();
-                return false;
-            });
+        </div>`).appendTo(controlForm);
+            controlForm.find('.entry:not(:last) .btn-add')
+                .removeClass('btn-add').addClass('btn-remove')
+                .removeClass('btn-success').addClass('btn-danger')
+                .html('<i class="fa fa-minus" aria-hidden="true"></i>');
+            $(".select2-placeholder-multiple").select2({});
+        }).on('click', '.btn-remove', function (e) {
+            $(this).closest('.entry').remove();
+            return false;
+        });
     </script>
 @endsection

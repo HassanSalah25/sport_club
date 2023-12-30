@@ -18,7 +18,17 @@ class EmployeesController extends Controller
      */
     public function index()
     {
-        $users = User::where('is_trainer','0')->latest('id')->get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $users = User::where('is_trainer','0')
+            ->whereHas('branches',function($q) use ($branchIds){
+                $q->whereIn('branchs.id',$branchIds);
+            })
+            ->latest('id')->get();
 //        dd($roles);
         return view('Dashboard.Employees.index',compact('users'));
     }
@@ -32,7 +42,10 @@ class EmployeesController extends Controller
     {
         $permissions  = Permission::get();
         $roles  = Role::get();
-        $branches  = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.Employees.create',compact('branches','permissions','roles'));
     }
 
@@ -110,7 +123,10 @@ class EmployeesController extends Controller
     public function edit($id)
     {
         $user=User::find($id);
-        $branches  = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.Employees.edit',compact('user','branches'));
 
     }

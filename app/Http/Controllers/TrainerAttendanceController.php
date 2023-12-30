@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendancePlayers;
+use App\Models\Branchs;
 use App\Models\TrainerAndPlayer;
 use App\Models\TrainerAttendance;
 use App\Http\Requests\StoreTrainerAttendanceRequest;
@@ -19,7 +20,13 @@ class   TrainerAttendanceController extends Controller
     public function index()
     {
         $now = Carbon::now()->timezone('Africa/Cairo')->toDateTimeString();
+        if (\Auth::user()->hasRole('administrator')) {
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        } else {
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
         $trainers= TrainerAndPlayer::with('traniers')
+            ->whereIn('branch_id', $branchIds)
             ->where(function ($query) use ($now) {
                 $query->where('time_from', '<=', $now)
                     ->where('time_to', '>=', $now);

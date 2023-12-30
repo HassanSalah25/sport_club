@@ -19,7 +19,15 @@ class PriceListController extends Controller
      */
     public function index()
     {
-        $priceLists = PriceList::paginate(10);
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $priceLists = PriceList::whereHas('sports.branches',function ($query) use ($branchIds) {
+            $query ->whereIn('branchs.id', $branchIds);
+        })->paginate(10);
         return view('Dashboard.PriceLists.index',compact('priceLists'));
 
     }
@@ -31,7 +39,10 @@ class PriceListController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         $sports = Sports::all();
         return view('Dashboard.PriceLists.create',compact('branches','sports'));
     }
@@ -76,7 +87,10 @@ class PriceListController extends Controller
      */
     public function edit(PriceList $priceList)
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
 
 
         $sports = Sports::all();

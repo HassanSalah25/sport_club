@@ -27,7 +27,10 @@ class PartnerContractsController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.PartnerContract.create',compact('branches'));
 
     }
@@ -69,7 +72,10 @@ class PartnerContractsController extends Controller
      */
     public function edit(PartnerContracts $partnerContract)
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.PartnerContract.edit',compact('branches','partnerContract'));
     }
 

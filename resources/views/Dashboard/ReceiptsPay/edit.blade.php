@@ -37,6 +37,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
+                                                        <label for="projectinput2"> السيريال </label>
+                                                        <input type="text" disabled class="form-control"  value="{{ $receiptsPay->id }}" required>
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
                                                         <label for="projectinput2">  اسم المستلم </label>
                                                         <input type="text" class="form-control" disabled name="name" value="{{ auth()->user()->name }}" required>
 
@@ -126,7 +133,14 @@
 
                                                     </div>
                                                 </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="buyer"> اسم المستلم </label>
+                                                            <input type="text" name="buyer" id="buyer" value="{{old('buyer') ?? $receiptsPay->buyer}}" class="form-control">
 
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <div class="col-md-6">
                                                     <div class="form-group">
@@ -178,12 +192,15 @@
         function checkfromType(){
             if($('input[name="to_type"]:checked').val() =='players'){
                 $('#to_players').show();
+                $('#to_players').find('select').attr('name','from');
                 $('#to_others').hide();
+                $('#to_others').find('select').removerAttr('name');
             }
             if($('input[name="to_type"]:checked').val() =='others'){
                 $('#to_others').show();
-
+                $('#to_others').find('select').attr('name','from');
                 $('#to_players').hide();
+                $('#to_players').find('select').removerAttr('name');
             }
         }
         function showEmployees(){

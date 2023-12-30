@@ -26,6 +26,12 @@ class ReceiptsController extends Controller
      */
     public function index(Request $request)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
         if($request->filter){
             $receipts = $this->filter($request);
             if($request->pdf){
@@ -38,10 +44,14 @@ class ReceiptsController extends Controller
                  return Excel::download($ExportToExcelSheet , 'ايصالات التوريد.xlsx');
             }
         } else{
-            $receipts = Receipts::paginate(10);
+            $receipts = Receipts::orderBy('id','desc')
+                ->whereIn('branch_id', $branchIds)
+                ->paginate(10);
 
         }
-        $players =Players::with('PlayerSportPrice')->get();
+        $players =Players::with('PlayerSportPrice')
+            ->whereIn('branch_id', $branchIds)
+            ->get();
 //        dd($players[0]->PlayerSportPrice->price);
         $receiptTypes= ReceiptTypes::get();
         return view('Dashboard.Receipts.index',compact('receipts','players','receiptTypes'));
@@ -54,8 +64,19 @@ class ReceiptsController extends Controller
      */
     public function create()
     {
-        $players =Players::with('PlayerSportPrice')->get();
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $players =Players::with('PlayerSportPrice')
+            ->whereIn('branch_id', $branchIds)
+            ->get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
 
 //        dd($players[0]->PlayerSportPrice->price);
         $receiptTypes= ReceiptTypes::get();
@@ -94,6 +115,7 @@ class ReceiptsController extends Controller
             'package_id'=>$packageId,
             'payer'=>$request->payer,
             'branch_id'=>$request->branch_id,
+            'serial_number'=>$request->serial,
         ]);
         return redirect()->route('receipt.index')->with('message','تم اضافه الايصال بنجاح ');
 
@@ -118,9 +140,20 @@ class ReceiptsController extends Controller
      */
     public function edit(Receipts $receipt)
     {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+
         $receiptTypes= ReceiptTypes::get();
-        $players =Players::get();
-        $branches = Branchs::get();
+        $players =Players::where('branch_id', $branchIds)
+        ->get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
 
         return view('Dashboard.Receipts.edit',compact('players','receipt','receiptTypes','branches'));
     }
@@ -143,7 +176,6 @@ class ReceiptsController extends Controller
             $packageId = $request->price_list;
 
         }
-
         $receipt->user_id=auth()->user()->id;
         $receipt->from=$request->from;
         $receipt->to=$request->to;
@@ -157,6 +189,7 @@ class ReceiptsController extends Controller
         $receipt->branch_id=$request->branch_id;
         $receipt->date_receipt=$request->date;
         $receipt->payer=$request->payer;
+        $receipt->serial_number = $request->serial;
         $receipt->save();
         return redirect()->route('receipt.index')->with('message','تم تعديل الايصال بنجاح ');
 

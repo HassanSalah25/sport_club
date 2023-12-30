@@ -41,9 +41,11 @@
                                 <div class="heading-elements">
                                     <ul class="list-inline mb-0">
 
+                                        @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('employee-create'))
                                             <li>
                                                 <a class="btn btn-sm btn-success box-shadow-2 round btn-min-width pull-right" href="{{route('employee.create')}}"> <i class="ft-plus ft-md"></i> اضافة موظف جديد</a>
                                             </li>
+                                    @endif
                                 </div>
                             </div>
                             <div class="card-content">
@@ -117,7 +119,12 @@
 
                                                 <td class="text-truncate">
                                                     <div class="btn-group" role="group" aria-label="Basic example">
+
+                                                        @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('employee-update'))
                                                             <a href="{{route('employee.edit', $user->id)}}" class="btn btn-info btn-sm round"> تعديل</a>
+                                                        @endif
+
+                                                            @if( auth()->user()->hasRole(['administrator','superadministrator'])  || auth()->user()->hasPermission('employee-delete'))
                                                             <form action="{{route('employee.destroy' ,$user->id)}}" method="POST" class="btn-group">
                                                                 @csrf @method('delete')
                                                                 <button
@@ -128,6 +135,7 @@
                                                                     حذف
                                                                 </button>
                                                             </form>
+                                                            @endif
                                                     </div>
                                                 </td>
                                             </tr>

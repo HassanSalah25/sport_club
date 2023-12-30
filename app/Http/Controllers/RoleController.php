@@ -104,11 +104,16 @@ class RoleController extends Controller
         $role->display_name = $request->name;
         $role->name = $request->name;
         $role->save();
-        if ($request->has('permession')) {
-            $role->syncPermissions($request->permession);
-        }
-        return redirect()->route('role.index')->with('success', 'Role edited successfully');
 
+        $role->syncPermissions($request->permession);
+        return redirect()->route('role.index')->with('success', 'Role edited successfully');
+    }
+
+    public function give_permission(Request $request,Role $role)
+    {
+        //
+
+        return redirect()->route('role.index')->with('success', 'Role edited successfully');
     }
 
     /**

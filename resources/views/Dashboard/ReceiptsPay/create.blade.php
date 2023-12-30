@@ -130,6 +130,16 @@
                                                     </div>
                                                 </div>
 
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="buyer"> اسم المستلم </label>
+                                                        <input type="text" name="buyer" id="buyer" value="{{old('buyer')}}" class="form-control">
+
+                                                    </div>
+                                                </div>
+                                                </div>
+
+                                            <div class="row">
 
                                                 <div class="col-md-6">
                                                     <div class="form-group">

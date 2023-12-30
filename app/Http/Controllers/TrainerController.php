@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEmployeesRequest;
 use App\Http\Requests\UpdateEmployeesRequest;
+use App\Models\Branchs;
 use App\Models\JoinAndLeave;
 use App\Models\Levels;
 use App\Models\Sports;
@@ -23,8 +24,16 @@ class TrainerController extends Controller
      */
     public function index()
     {
-        $users = User::where('is_trainer', '1')
-            ->orderBy('created_at', 'DESC')->paginate(10);
+
+        $users = User::where('is_trainer', '1');
+
+            if(!\Auth::user()->hasRole('administrator')){
+                $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+                $users->whereHas('branches',function ($q) use ($branchIds){
+                    $q->whereIn('branchs.id',$branchIds);
+                });
+            }
+        $users = $users->orderBy('created_at', 'DESC')->paginate(10);
         return view('Dashboard.Trainers.index', compact('users'));
     }
 
@@ -36,7 +45,11 @@ class TrainerController extends Controller
     public function create()
     {
         $sports = Sports::get();
-        return view('Dashboard.Trainers.create', compact('sports'));
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
+        return view('Dashboard.Trainers.create', compact('sports','branches'));
     }
 
     /**
@@ -101,6 +114,8 @@ class TrainerController extends Controller
             }
         }
 
+        $admin->branches()->sync($request->branch_id);
+
 
         return redirect()->route('trainer.index')->with('message', 'تم اضافه المدرب بنجاح ');
 
@@ -117,7 +132,16 @@ class TrainerController extends Controller
         //
         $sport_request = $request->sport_id;
         $level_request = $request->level_id;
-        $trainers = User::whereHas('sport_and_level_trainer', function ($query) use ($sport_request,$level_request) {
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $trainers = User::whereHas('branches',function($q) use ($branchIds){
+            $q->whereIn('branchs.id',$branchIds);
+        })
+            ->whereHas('sport_and_level_trainer', function ($query) use ($sport_request,$level_request) {
 
             $query->where('sport_id', $sport_request)->where('level_id',$level_request);
 
@@ -152,9 +176,12 @@ class TrainerController extends Controller
     public function edit($id)
     {
         $sports = Sports::get();
-
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         $user = User::find($id);
-        return view('Dashboard.Trainers.edit', compact('user', 'sports'));
+        return view('Dashboard.Trainers.edit', compact('user', 'sports','branches'));
 
     }
 
@@ -232,6 +259,7 @@ class TrainerController extends Controller
         }
         $admin->save();
 
+        $admin->branches()->sync($request->branch_id);
         return redirect()->route('trainer.index')->with('message', 'تم تعديل المدرب بنجاح ');
 
     }

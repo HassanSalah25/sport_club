@@ -52,6 +52,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['adminMiddleware', 'auth' =>
     Route::post('stadium-rent-table/ajax/update', "\App\Http\Controllers\StadiumsRentTableController@update")->name('update-stadium');
     Route::post('stadium-rent-table/ajax/delete', "\App\Http\Controllers\StadiumsRentTableController@destroy")->name('delete-stadium');
     Route::get('stadium-rent-table/ajax/show', "\App\Http\Controllers\StadiumsRentTableController@show")->name('show-stadium');
+    Route::get('trainer-and-player/ajax/show/event', "\App\Http\Controllers\StadiumsRentTableController@showEvent")->name('show-event-stadium');
     Route::get('tournament-subscription/get-tournament-information', "\App\Http\Controllers\TournamentSubscriptionsController@getTournamentInformation")->name('get-tournament-information');
     Route::get('tournament-subscription/get-tournament-selected-players', "\App\Http\Controllers\TournamentSubscriptionsController@getSelectedPlayers")->name('get-tournament-selected-players');
     Route::get('tournament-follow/get-tournament-information', "\App\Http\Controllers\TournamentPlayersDetailsController@getTournamentInformation")->name('get-tournament-follow-information');
@@ -113,6 +114,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['adminMiddleware', 'auth' =>
     Route::prefix('reports')->as('reports.')->group(function (){
         Route::get('subscription_reports','App\Http\Controllers\AdminReport@subscription_reports')->name('subscription_reports');
         Route::get('schedules_reports','App\Http\Controllers\AdminReport@schedules_reports')->name('schedules_reports');
+        Route::get('stadiums_reports','App\Http\Controllers\AdminReport@stadiums_reports')->name('stadiums_reports');
     });
 
 Route::get('logout',"App\Http\Controllers\LoginController@logout")->name('logout');

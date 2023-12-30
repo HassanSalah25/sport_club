@@ -47,6 +47,20 @@
                                                 </div>
                                                 <div class="col-md-3">
                                                     <div class="form-group">
+                                                        <label for="branch_id">الفرع</label>
+                                                        <select class="select2-placeholder-multiple form-control text-left"
+                                                                multiple="multiple"
+                                                                name="branch_id[]">
+                                                            <option value="" >اختر</option>
+                                                            @foreach($branches as $branch)
+                                                                <option value="{{$branch->id}}"
+                                                                    {{in_array($branch->id,old('branch_id')??$user->branches->pluck('id')->toArray())  ? 'selected' : ''}}>{{$branch->name}}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
                                                         <label for="projectinput1">هاتف </label>
                                                         <input type="number" id="projectinput1" class="form-control"  placeholder="ادخل هاتف المدرب" name="phone" value="{{$user->phone}}" maxlength="11" />
 
@@ -257,6 +271,7 @@
 @section('script')
 
     <script>
+
         $('#sport_id').on('change', function () {
             var id =$(this).val();
             var  route = "{{route('get-levels')}}";
@@ -270,20 +285,7 @@
                     }
                 });
         });
-        $(window).on( 'load', function () {
-            var id =$("#sport_id").val();
-            var user_id = "{{ $user->id }}"
-            var  route = "{{route('get-levels')}}";
-            $.ajax(route,   // request url
-                {
-                    type: 'GET',  // http method
-                    data: { "sport_id": id , "user_id":user_id },
-                    success: function (data, status, xhr) {// success callback function
-                        $("#level_id").html(data.data);
 
-                    }
-                });
-        });
         $(function() {
             $(document).on('click', '.btn-add', function(e) {
                 e.preventDefault();
@@ -317,6 +319,15 @@
             }
         });
 
-
+        var id =$('#sport_id').val();
+        var  route = "{{route('get-levels')}}";
+        $.ajax(route,   // request url
+            {
+                type: 'GET',  // http method
+                data: { "sport_id": id ,'user_sport_id' : {{  $user->sport_and_level_trainer[0]->level_id }}},
+                success: function (data, status, xhr) {// success callback function
+                    $("#level_id").html(data.data);
+                }
+            });
     </script>
 @endsection

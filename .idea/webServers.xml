@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e562a3f8-3694-4414-82eb-75e5fcf256d1" name="Plesk" url="http://adoring-banzai.88-99-147-18.plesk.page">
+        <fileTransfer accessType="FTPS" host="adoring-banzai.88-99-147-18.plesk.page" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

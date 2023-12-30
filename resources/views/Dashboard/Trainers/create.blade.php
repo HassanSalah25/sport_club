@@ -42,6 +42,20 @@
                                                         <input type="text" id="projectinput1" class="form-control" required placeholder="ادخل اسم المدرب" name="name" value="{{old('name')}}" />
                                                     </div>
                                                 </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="branch_id">الفرع</label>
+                                                        <select class="select2-placeholder-multiple form-control text-left"
+                                                                multiple="multiple"
+                                                                name="branch_id[]">
+                                                            <option value="" >اختر</option>
+                                                            @foreach($branches as $branch)
+                                                                <option value="{{$branch->id}}"
+                                                                    {{in_array($branch->id,old('branch_id')??[])  ? 'selected' : ''}}>{{$branch->name}}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
                                                 <div class="col-md-3">
                                                     <div class="form-group">
                                                         <label for="projectinput1">هاتف </label>

@@ -191,6 +191,9 @@
                                             <button type="button" id="updateEvent" class="btn btn-primary"
                                             >تعديل
                                             </button>
+                                            <button type="button" id="deleteEvent" class="btn btn-danger"
+                                            >حذف
+                                            </button>
                                             <button type="button" class="btn btn-default close_btn"
                                                     data-dismiss="modal">الغاء
                                             </button>
@@ -279,11 +282,11 @@
                                                                 <select
                                                                     class=" form-control user_id1"
                                                                     name="user_id" id="user_id">
-                                                                    @foreach($users as $user)
+                                                                  {{--  @foreach($users as $user)
                                                                         <option
                                                                             value="{{$user->id}}">{{$user->name}}</option>
 
-                                                                    @endforeach
+                                                                    @endforeach--}}
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -362,7 +365,6 @@
     </div>
 @endsection
 @section('script')
-
     <script>
         $(document).ready(function () {
             $('.branch_id1').on('change', function () {
@@ -379,7 +381,6 @@
                             var option = $('<option>', {
                                 text: 'اختر ملعب',
                             });
-
                             options.push(option);
                             data.forEach(function (e) {
                                 console.log(e);
@@ -443,7 +444,6 @@
                     right: 'month,agendaWeek,agendaDay'
                 },
                 slotDuration: '00:05:00',
-
                 events: "{{ route('trainer-and-player.create') }}",
                 selectable: true,
                 selectHelper: true,
@@ -485,7 +485,7 @@
                                     repeated: repeated
                                 },
                                 success: function (data) {
-                                    if (data.status == 422) {
+                                    if (data.status == 400) {
                                         $('.modal-body').find('.alert-danger').remove();
                                         $('.modal-body').append(` <div class="alert alert-danger alert-block" style="z-index: 100000">
                                                                             <button type="button" class="close" data-dismiss="alert">×</button>
@@ -661,7 +661,10 @@
                                             const timeFromString = `${timeFrom.getHours().toString().padStart(2, '0')}:${timeFrom.getMinutes().toString().padStart(2, '0')}`;
                                             const timeTo = new Date(response.event.time_to);
                                             const timeToString = `${timeTo.getHours().toString().padStart(2, '0')}:${timeTo.getMinutes().toString().padStart(2, '0')}`;
-
+                                           console.log(response.event.event_repeated)
+                                            if(response.event.event_repeated){
+                                                $('#repeated').prop('checked',true);
+                                            }
 
 
 
@@ -681,7 +684,7 @@
                                 var level_id = $('.level_id').val();
                                 var from = $('.time_from').val();
                                 var to = $('.time_to').val();
-                                var  repeated = $('#repeated1').prop('checked');
+                                var  repeated = $('#repeated').prop('checked');
                                 var trainerAndPlayer_id = response.event.id;
                                 if (user_id) {
                                     var Route = "{{route('update-event')}}";
@@ -719,7 +722,6 @@
                                         },
                                         error: function (data, xhr, status, error) {
                                             console.log(error)
-                                            console.log(error.to)
                                             $('.modal-body').find('.alert-danger').remove();
                                             $('.modal-body').append(` <div class="alert alert-danger alert-block" style="z-index: 100000">
                                                                             <button type="button" class="close" data-dismiss="alert">×</button>

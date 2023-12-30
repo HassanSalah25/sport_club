@@ -50,14 +50,14 @@
                                                         <label for="projectinput2">قسم الموظف</label>
                                                         <select class="employee form-control text-left" required  name="role" value="{{old('role')}}">
                                                             <option value="" >اختر</option>
-                                                            <option @if($user->department== "Administrator" )  selected @endif value="Administrator" >ادمن</option>
-                                                            <option @if($user->department== "user     " )  selected @endif value="user" id="employee" >موظف</option>
-                                                            <option @if($user->department== "Sports_activity_manager" )  selected @endif value="Sports_activity_manager" id="Sports_activity_manager" >مدير النشاط الرياضي</option>
-                                                            <option @if($user->department== "Managing_Director" )  selected @endif value="Managing_Director" id="Managing_Director" >المدير الاداري  </option>
-                                                            <option @if($user->department== "Branch_Manger" )  selected @endif value="Branch_Manger" id="Branch_Manger" >مدير فرع  </option>
-                                                            <option @if($user->department== "Technical_Director" )  selected @endif value="Technical_Director" id="Technical_Director" >مدير فني  </option>
-                                                            <option @if($user->department== "Financial_Manager" )  selected @endif value="Financial_Manager" id="Financial_Manager" >مدير مالي  </option>
-                                                            <option @if($user->department== "Hr_Manager" )  selected @endif value="Hr_Manager" id="Hr_Manager" >مدير الموارد البشرية </option>
+                                                            <option @if(in_array("Administrator",$user->roles->pluck('name')->toArray()))  selected @endif value="Administrator" >ادمن</option>
+                                                            <option @if(in_array("user",$user->roles->pluck('name')->toArray()))  selected @endif value="user" id="employee" >موظف</option>
+                                                            <option @if(in_array("Sports_activity_manager",$user->roles->pluck('name')->toArray()))  selected @endif value="Sports_activity_manager" id="Sports_activity_manager" >مدير النشاط الرياضي</option>
+                                                            <option @if(in_array("Managing_Director",$user->roles->pluck('name')->toArray()))  selected @endif value="Managing_Director" id="Managing_Director" >المدير الاداري  </option>
+                                                            <option @if(in_array("Branch_Manger",$user->roles->pluck('name')->toArray()))  selected @endif value="Branch_Manger" id="Branch_Manger" >مدير فرع  </option>
+                                                            <option @if(in_array("Technical_Director",$user->roles->pluck('name')->toArray()))  selected @endif value="Technical_Director" id="Technical_Director" >مدير فني  </option>
+                                                            <option @if(in_array("Financial_Manager",$user->roles->pluck('name')->toArray()))  selected @endif value="Financial_Manager" id="Financial_Manager" >مدير مالي  </option>
+                                                            <option @if(in_array("Hr_Manager",$user->roles->pluck('name')->toArray()))  selected @endif value="Hr_Manager" id="Hr_Manager" >مدير الموارد البشرية </option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -72,7 +72,7 @@
                                                         <label for="branch_id">الفرع</label>
                                                         <select class="select2-placeholder-multiple form-control text-left"
                                                                 multiple="multiple"
-                                                                name="branch_id[]`">
+                                                                name="branch_id[]">
                                                             <option value="" >اختر</option>
                                                             @foreach($branches as $branch)
                                                                 <option value="{{$branch->id}}"
@@ -91,7 +91,7 @@
                                                     <div class="form-group">
                                                         <label for="projectinput1"> تاريخ الميلاد</label>
                                                         <input type="date"  class="form-control"   placeholder="dd-mm-yyyy"
-                                                               min="1910-01-01" max="2030-12-31" name="birth_day"  value="{{$user->birth_day->format('Y-m-d') }}" />
+                                                               min="1910-01-01" max="2030-12-31" name="birth_day"  value="{{$user?->birth_day?->format('Y-m-d') }}" />
                                                     </div>
                                                 </div>
 
@@ -157,6 +157,9 @@
                                             <hr class="form-group">
                                             </div>
                                             <div class="row" id="permissionID" style="display: none;">
+                                                <label>
+                                                    <input type="checkbox" id="select-all-permissions" /> تحديد الكل
+                                                </label>
                                                 <div class="col-md-3 mb-3">
                                                     <div class="checkbox">
                                                         <h5 for="">الفروع</h5>
@@ -232,6 +235,52 @@
                                                     </div>
                                                     <div class="checkbox">
                                                         <label><input name="permession[]" type="checkbox"  @if($user->hasPermission('package-delete')) checked  @endif value="package-delete" />حذف</label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">بنود العقد</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="contract_terms-delete" />حذف</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">الموظفين</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="employee-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="employee-delete" />حذف</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">المدربين</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-create" />انشاء</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-update" />تعديل</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-read" />عرض</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="trainer-delete" />حذف</label>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 mb-3">
@@ -474,6 +523,18 @@
 {{--                                                        <label><input name="permession[]" type="checkbox"  @if($user->hasPermission('package-delete')) checked  @endif value="package-delete" />حذف</label>--}}
 {{--                                                    </div>--}}
                                                 </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="checkbox">
+                                                        <h5 for="">التقارير</h5>
+                                                        <label><input name="permession[]" type="checkbox" value="subscription_reports" />تقارير الاشتراكات</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="schedules_reports" />تقارير الجداول</label>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label><input name="permession[]" type="checkbox" value="stadiums_reports" />تقارير الملاعب</label>
+                                                    </div>
+                                                </div>
                                                 {{--                                                <div class="col-md-3">--}}
                                                 {{--                                                    <div class="checkbox">--}}
                                                 {{--                                                        <h5 for="">الطلاب</h5>--}}
@@ -660,6 +721,14 @@
             $("input[type=checkbox][value="+value+"-update]").prop("checked",true);
             $("input[type=checkbox][value="+value+"-delete]").prop("checked",true);
         }
+    </script>
+    <script>
+        document.getElementById('select-all-permissions').addEventListener('change', function () {
+            var checkboxes = document.querySelectorAll('input[name="permession[]"]');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = this.checked;
+            }, this);
+        });
     </script>
 @endsection
 

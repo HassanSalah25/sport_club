@@ -73,7 +73,7 @@
                                                  {{ $stadium->branches->name }}
                                                 </td>
                                                 <td>
-                                                 {{ $stadium->sports->name }}
+                                                 {{ $stadium->sports?->name }}
                                                 </td>
                                                 <td>
                                                  {{ $stadium->type == 1 ? 'نعم': 'لا'  }}

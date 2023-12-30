@@ -28,7 +28,10 @@ class ReceiptTypesController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.ReceiptTypes.create', compact('branches'));
     }
 
@@ -67,7 +70,10 @@ class ReceiptTypesController extends Controller
      */
     public function edit(ReceiptTypes $receiptType)
     {
-        $branches = Branchs::get();
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
         return view('Dashboard.ReceiptTypes.edit', compact('branches','receiptType'));
 
 

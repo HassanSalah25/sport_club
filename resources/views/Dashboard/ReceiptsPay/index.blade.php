@@ -210,6 +210,7 @@
                                     <table id="tablecontents" class="table table-hover table-xl mb-0 sortable">
                                         <thead>
                                         <tr>
+                                            <th class="border-top-0">السيريال</th>
                                             <th class="border-top-0">   القائم  بالصرف</th>
                                             <th class="border-top-0"> من </th>
                                             <th class="border-top-0"> الي </th>
@@ -225,19 +226,20 @@
                                         @forelse($receipts as $receipt )
 
                                             <tr class="row1" data-id="{{ $receipt->id }}" >
+                                                <td>{{$receipt->id}}</td>
                                                 <td>{{$receipt->user->name}}</td>
-                                                <td>{{$receipt->receiptType->name}}</td>
+                                                <td>{{$receipt->receiptType?->name}}</td>
 
                                                 @php
                                                     $id =  $receipt->to;
                                                     $name ='';
                                                     if($receipt->type_of_to=='players'){
                                                        $player = \App\models\Players::find($id);
-                                                       $name = $player->name;
+                                                       $name = $player?->name;
                                                     }
                                                     if($receipt->type_of_to=='others'){
                                                       $receiptType = \App\Models\ReceiptTypePay::find($id);
-                                                       $name = $receiptType->name;
+                                                       $name = $receiptType ->name;
 
                                                     }
 
@@ -315,12 +317,16 @@
     function checkfromType(){
         if($('input[name="to_type"]:checked').val() =='players'){
             $('#to_players').show();
+            $('#to_players').attr('name','to')
             $('#to_others').hide();
+            $('#to_others').removeAttr('name')
         }
         if($('input[name="to_type"]:checked').val() =='others'){
             $('#to_others').show();
+            $('#to_others').attr('name','to')
 
             $('#to_players').hide();
+            $('#to_players').removeAttr('name')
         }
     }
 </script>

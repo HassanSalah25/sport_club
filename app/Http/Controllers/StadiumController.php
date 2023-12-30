@@ -18,8 +18,13 @@ class StadiumController extends Controller
      */
     public function index()
     {
-
-        $stadiums = Stadium::paginate(10);
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        $stadiums = Stadium::whereIn('branch_id', $branchIds)->paginate(10);
         return view('Dashboard.Stadiums.index', compact('stadiums'));
     }
 
@@ -38,8 +43,18 @@ class StadiumController extends Controller
      */
     public function create()
     {
-        $branches = Branchs::get();
-        $sports = Sports::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+            $branches = Branchs::get();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+            $branches =  \Auth::user()->branches;
+        }
+
+        $sports = Sports::whereHas('branches',function ($query) use ($branchIds) {
+                $query ->whereIn('branchs.id', $branchIds);
+            })->get();
 
         return view('Dashboard.Stadiums.create', compact('sports', 'branches'));
 
@@ -84,8 +99,19 @@ class StadiumController extends Controller
      */
     public function edit(Stadium $stadium)
     {
-        $branches = Branchs::get();
-        $sports = Sports::get();
+        if(\Auth::user()->hasRole('administrator')){
+            $branchIds = Branchs::get()->pluck('id')->toArray();
+        }
+        else{
+            $branchIds = \Auth::user()->branches->pluck('id')->toArray();
+        }
+        if(\Auth::user()->hasRole('administrator'))
+            $branches = Branchs::get();
+        else
+            $branches =  \Auth::user()->branches;
+        $sports = Sports::whereHas('branches',function ($query) use ($branchIds) {
+                $query ->whereIn('branchs.id', $branchIds);
+            })->get();
 
 
         return view('Dashboard.Stadiums.edit',compact('stadium','branches','sports'));
